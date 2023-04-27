@@ -5,6 +5,7 @@ import router from "./router";
 import store from "./store";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "../css/main.css";
+import "../css/app.css";
 
 import App from "./App.vue";
 const app = createApp(App);
