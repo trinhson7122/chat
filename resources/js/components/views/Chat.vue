@@ -1,5 +1,7 @@
 <template>
-    <div v-if="!toUser">Ko co gi</div>
+    <div v-if="!toUser" class="text-center w-100">
+        <img src="../../../images/empty.jpg" class="img-fit">
+    </div>
     <div v-else class="user-chat w-100 overflow-hidden" showroomslist="true">
         <div class="d-lg-flex">
             <div class="w-100 overflow-hidden position-relative">
@@ -272,6 +274,7 @@ export default {
             unAuth: "auth/not_auth",
             set_messages: "data/set_messages",
             push_message: "data/push_message",
+            update_list_message_with_me: "data/update_list_message_with_me",
         }),
         onCloseChat() {
             this.$emit('onCloseChat');
@@ -312,6 +315,10 @@ export default {
                     list_message_id: this.listMessage.id,
                 });
                 await req.response;
+                this.listMessage.last_message = this.message;
+                this.listMessage.last_user_id_send = this.$store.state.auth.user.id;
+                this.listMessage.updated_at = new Date().toISOString();
+                this.update_list_message_with_me(this.listMessage);
             }
             catch (error) {
                 console.log(error);
