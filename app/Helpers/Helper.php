@@ -19,3 +19,15 @@ function convert_name($str)
     $str = preg_replace("/( )/", '-', $str);
     return $str;
 }
+function formatBytes($bytes, $precision = 2)
+{
+    $units = array('', 'KB', 'MB', 'GB', 'TB');
+
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+
+    $bytes /= pow(1024, $pow);
+
+    return round($bytes, $precision) . ' ' . $units[$pow];
+}
