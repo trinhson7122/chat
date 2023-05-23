@@ -90,6 +90,7 @@
     </div>
 </template>
 <script>
+import { register, csrf_cookie } from "../../api.js";
 export default {
     data() {
         return {
@@ -110,8 +111,8 @@ export default {
     methods: {
         onRegister() {
             this.processing = true;
-            axios.get('/sanctum/csrf-cookie');
-            const req = axios.post('api/auth/register', this.data);
+            axios.get(csrf_cookie);
+            const req = axios.post(register, this.data);
             req.then((response) => {
                 console.log(response);
                 this.resetData();
