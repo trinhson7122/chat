@@ -15,11 +15,17 @@
                                             <i class="fa-solid fa-magnifying-glass"></i>
                                         </button>
                                     </div>
-                                    <input type="text" placeholder="Search messages or users" class="form-control bg-light">
-                                    <button title="Create Chat" type="button"
+                                    <input v-model="searchName" type="text" placeholder="Tìm kiếm người đã nhắn"
+                                        class="form-control bg-light">
+                                    <button title="Tạo đoạn chat cá nhân" type="button"
                                         class="btn text-decoration-none text-muted font-size-18 py-0 btn-link"
-                                        data-bs-toggle="modal" data-bs-target="#add-chat-modal">
+                                        data-toggle="modal" data-target="#add-chat-modal">
                                         <i class="fa-solid fa-user-plus"></i>
+                                    </button>
+                                    <button title="Tạo đoạn chat cá nhân" type="button"
+                                        class="btn text-decoration-none text-muted font-size-18 py-0 btn-link"
+                                        data-bs-toggle="modal" data-bs-target="#add-chat-modal1">
+                                        <i class="fa-solid fa-users"></i>
                                     </button>
                                 </div>
                             </div>
@@ -27,7 +33,7 @@
                         <div dir="ltr" class="px-4 pb-4">
                             <Carousel :items-to-show="2.5" :wrap-around="false" :transition="500">
                                 <Slide v-for="user in users" :key="user.id">
-                                    <div class="carousel__item">
+                                    <div class="carousel__item w-100">
                                         <UserOnline :user="user" />
                                     </div>
                                 </Slide>
@@ -69,12 +75,13 @@
                 </div>
             </div>
         </div>
-        <AddChatModal :id="'exampleModal'" />
+        <AddChatModal />
     </DefaultLayout>
     <ChatVue @onCloseChat="showChat = false" :listMessage="listMessage" :toUser="toUser"
         :class="{ 'user-chat-show': showChat }" />
 </template>
 <script>
+import { get_list_message_with_me, get_user_online } from "../../api.js";
 import { mapActions } from "vuex";
 import UserOnline from "@/components/UserOnline.vue";
 import Loading from "@/components/Loading.vue";
@@ -100,7 +107,7 @@ export default {
             listMessage: null,
             loading: false,
             showChat: false,
-            toUser: null,
+            searchName: "",
         };
     },
     created() {
@@ -109,6 +116,9 @@ export default {
             this.fectUserOnline();
             this.set_load_all_data(true);
         }
+        if (this.listMessageWithMe.length > 0) {
+            this.listMessage = this.listMessageWithMe[0];
+        }
         this.listenEvent();
     },
     computed: {
@@ -116,11 +126,44 @@ export default {
             return this.loading;
         },
         listMessageWithMe() {
-            return this.$store.state.data.list_message_with_mes;
+            if (this.$store.state.data.list_message_with_mes.length <= 0) return [];
+
+            let data = this.$store.state.data.list_message_with_mes.sort((a, b) => {
+                return new Date(b.updated_at) - new Date(a.updated_at);
+            });
+
+            if (this.searchName != "") {
+
+                data = data.filter((item) => {
+                    if (item.to_user.name.toLowerCase().includes(this.searchName.toLowerCase())) {
+                        return 1;
+                    }
+                    if (item.from_user.name.toLowerCase().includes(this.searchName.toLowerCase())) {
+                        return 1;
+                    }
+                    return 0;
+                });
+            }
+            return data;
         },
         users() {
-            return this.$store.state.data.user_onlines;
+            return this.$store.state.data.user_onlines.sort((a, b) => {
+                return new Date(b.last_online_at) - new Date(a.last_online_at);
+            });
         },
+        toUser() {
+            if (!this.listMessage) return null;
+            if (this.listMessage.from_user_id == this.$store.state.auth.user.id) {
+                return this.listMessage.to_user;
+            }
+            else {
+                return this.listMessage.from_user;
+            }
+        },
+        searchNameComp() {
+            this.listMessageWithMe();
+            return this.searchName;
+        }
     },
     methods: {
         ...mapActions({
@@ -133,18 +176,11 @@ export default {
         async fetchListMessageWithMe() {
             this.loading = true;
             try {
-                const req = await axios.get('api/list-message-with-me');
+                const req = await axios.get(get_list_message_with_me);
                 await req.response;
                 this.set_list_message_with_mes(req.data);
 
-                const item = req.data[0];
-                this.listMessage = item;
-                if (item.from_user_id == this.$store.state.auth.user.id) {
-                    this.toUser = item.to_user;
-                }
-                else {
-                    this.toUser = item.from_user;
-                }
+                this.listMessage = req.data[0];
             }
             catch (error) {
                 if (error.response.status === 401) {
@@ -157,7 +193,7 @@ export default {
         async fectUserOnline() {
             this.loading = true;
             try {
-                const req = await axios.get('api/user/all');
+                const req = await axios.get(get_user_online);
                 await req.response;
                 this.set_user_onlines(req.data);
             }
@@ -171,13 +207,18 @@ export default {
         },
         showChatComp(item) {
             this.listMessage = item;
-            if (item.from_user_id == this.$store.state.auth.user.id) {
-                this.toUser = item.to_user;
-            }
-            else {
-                this.toUser = item.from_user;
-            }
             this.showChat = true;
+
+            if (item.last_user_id_send != this.$store.state.auth.user.id) {
+                if (item.from_user_id == this.$store.state.auth.user.id) {
+                    item.is_from_user_read = 1;
+                }
+                else {
+                    item.is_to_user_read = 1;
+                }
+                this.update_list_message_with_me(item);
+                //goi api
+            }
         },
         listenEvent() {
             const func1 = this.update_list_message_with_me;
