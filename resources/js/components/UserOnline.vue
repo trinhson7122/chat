@@ -16,19 +16,35 @@
         </div>
     </div>
 </template>
-  
-<script>
 
+<script>
+import { store_list_message } from "../api.js";
+import { mapActions } from "vuex";
 export default {
     props: {
         user: Object,
     },
     methods: {
-        addChat() {
-            const req = window.axios.post('api/list-message', {
-                to_user_id: this.user.id,
-                from_user_id: this.$store.state.auth.user.id,
-            });
+        ...mapActions({
+            unAuth: "auth/not_auth",
+            update_list_message_with_me: "data/update_list_message_with_me",
+        }),
+        async addChat() {
+            try {
+                const req = await axios.post(store_list_message, {
+                    to_user_id: this.user.id,
+                    from_user_id: this.$store.state.auth.user.id,
+                });
+                await req.response;
+
+                this.update_list_message_with_me(req.data);
+            }
+            catch (error) {
+                if (error.response.status === 401) {
+                    this.unAuth();
+                }
+                console.log(error.response.data);
+            }
         },
     },
 };
