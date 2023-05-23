@@ -25,7 +25,7 @@
                                                     <i class="fa-solid fa-envelope"></i>
                                                 </span>
                                             </div>
-                                            <input v-model="auth.email" type="email" placeholder="Enter your email"
+                                            <input @keypress.enter="onLogin" v-model="auth.email" type="email" placeholder="Enter your email"
                                                 class="form-control bg-soft-light border-light" /><!---->
                                         </div>
                                     </div>
@@ -40,7 +40,7 @@
                                                     <i class="fa-solid fa-lock"></i>
                                                 </span>
                                             </div>
-                                            <input v-model="auth.password" type="password" placeholder="Enter your password"
+                                            <input @keypress.enter="onLogin" v-model="auth.password" type="password" placeholder="Enter your password"
                                                 class="form-control bg-soft-light border-light" /><!---->
                                         </div>
                                     </div>
@@ -50,7 +50,7 @@
                                                 aria-label="Close" class="close">×</button>{{ error.message }}
                                         </div>
                                         <button @click="onLogin" type="button" class="btn btn-primary btn-block">
-                                            Đăng nhập
+                                            {{ processing ? "Xin chờ..." : "Đăng nhập" }}
                                         </button>
                                     </div>
                                 </form>
@@ -72,6 +72,7 @@
 </template>
 <script>
 import { mapActions } from "vuex";
+import { login, csrf_cookie } from "../../api.js";
 export default {
     data() {
         return {
@@ -91,31 +92,28 @@ export default {
         ...mapActions({
             signIn: "auth/login",
         }),
-        onLogin() {
+        async onLogin() {
             this.processing = true;
-            axios.get("/sanctum/csrf-cookie");
-            const req = axios.post("api/auth/login", this.auth);
-            req.then((response) => {
-                localStorage.setItem("token", response.data.string);
+            try {
+                await axios.get(csrf_cookie);
+                const req = await axios.post(login, this.auth);
+                await req.response;
+                localStorage.setItem("token", req.data.string);
                 window.axios.defaults.headers.common["Authorization"] =
                     localStorage.getItem("token") || "";
-                //console.log(response.data.string);
                 this.signIn();
-            });
-
-            req.catch(({ response }) => {
-                if (response.status === 422) {
-                    this.validationErrors = response.data.errors;
+            }
+            catch (error) {
+                if (error.response.status === 422) {
+                    this.validationErrors = error.response.data.errors;
                 } else {
                     this.error.show = true;
-                    this.error.message = response.data.message;
-                    console.log(response.data.message);
+                    this.error.message = error.response.data.message;
+                    console.log(error.response.data.message);
                 }
-            });
-
-            req.finally(() => {
-                this.processing = false;
-            });
+                console.log(error);
+            }
+            this.processing = false;
         },
     },
 };
