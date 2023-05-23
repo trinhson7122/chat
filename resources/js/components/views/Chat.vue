@@ -1,9 +1,10 @@
 <template>
-    <div v-if="!toUser" class="text-center w-100">
+    <div v-if="!toUser" class="text-center w-100 overflow-hidden user-chat">
         <img src="../../../images/empty.jpg" class="img-fit">
     </div>
     <div v-else class="user-chat w-100 overflow-hidden" showroomslist="true">
-        <div class="d-lg-flex">
+        <Loading v-if="!loaded" />
+        <div @click="hideEmojiPicker($event)" v-else class="d-lg-flex">
             <div class="w-100 overflow-hidden position-relative">
                 <div class="p-3 p-lg-4 border-bottom">
                     <div class="row align-items-center">
@@ -20,7 +21,7 @@
                                         class="rounded-circle avatar-xs">
                                     <div v-else class="avatar-xs">
                                         <span class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                            TD</span>
+                                            {{ user.short_name }}</span>
                                     </div>
                                 </div>
                                 <div class="media-body overflow-hidden">
@@ -77,147 +78,80 @@
                             <div class="simplebar-offset" style="right: 0px; bottom: 0px;">
                                 <div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden;">
                                     <div class="simplebar-content" id="can-scroll" style="padding: 24px;">
-                                        <div v-for="chat in chats" :key="chat.id">
-                                            <ul class="list-unstyled mb-0" newmessages="">
-                                                <li :class="{ 'right': chat.from_user_id == $store.state.auth.user.id }">
-                                                    <div v-if="chat.from_user_id == $store.state.auth.user.id"
-                                                        class="conversation-list message-highlight">
-                                                        <div v-if="$store.state.auth.user.avatar" class="chat-avatar">
-                                                            <img :src="$store.state.auth.user.avatar" alt="">
-                                                        </div>
-                                                        <div v-else class="avatar-xs chat-avatar">
-                                                            <span
-                                                                class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                                                TD</span>
-                                                        </div>
-                                                        <div class="user-chat-content">
-                                                            <div class="ctext-wrap">
-                                                                <div class="ctext-wrap-content">
-                                                                    <div>
-                                                                        <div class="">
-                                                                            <div>
-                                                                                <span target="_blank" class="">
-                                                                                    {{ chat.message }}
-                                                                                </span>
-                                                                            </div>
+
+                                        <Message v-for="chat in chats" :key="chat.id" :chat="chat" :toUser="toUser"
+                                            :isMe="chat.from_user_id == $store.state.auth.user.id" />
+                                        <ul v-show="processSendFile" class="list-unstyled mb-0" newmessages="sad">
+                                            <li class="right">
+                                                <div class="conversation-list message-highlight align-items-center">
+                                                    <!--  -->
+                                                    <div v-if="$store.state.auth.user.avatar"
+                                                        class="chat-avatar">
+                                                        <img :src="$store.state.auth.user.avatar" alt="" />
+                                                    </div>
+                                                    <div v-else
+                                                        class="avatar-xs chat-avatar">
+                                                        <span
+                                                            class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                                            {{ $store.state.auth.user.short_name }}
+                                                        </span>
+                                                    </div>
+        
+                                                    <div class="user-chat-content">
+
+                                                        <div class="ctext-wrap">
+                                                            <div class="ctext-wrap-content">
+                                                                <div>
+                                                                    <div class="">
+                                                                        <div>
+                                                                            <span target="_blank" class="">
+                                                                                Đang tải file lên...
+                                                                            </span>
                                                                         </div>
                                                                     </div>
-                                                                    <p class="chat-time mb-0 d-flex align-items-center">
-                                                                        <i class="far fa-clock align-middle mr-1"></i>
-                                                                        <span class="align-middle">10:00</span>
-                                                                    </p>
-                                                                </div>
-                                                                <!-- <div class="text-timestamp text-secondary chat-time">
-                                                                    <i class="far fa-clock align-middle mr-1"></i>
-                                                                    <span class="align-middle">10:00</span>
-                                                                </div> -->
-                                                                <div class="dropdown b-dropdown align-self-start btn-group">
-                                                                    <button aria-haspopup="true" aria-expanded="false"
-                                                                        type="button" class="btn dropdown-toggle btn-white">
-                                                                        <i class="fas fa-ellipsis-h"></i>
-                                                                    </button>
-                                                                    <ul role="menu" tabindex="-1" class="dropdown-menu"
-                                                                        aria-labelledby="__BVID__57__BV_toggle_">
-                                                                        <li role="presentation"><a role="menuitem" href="#"
-                                                                                target="_self"
-                                                                                class="dropdown-item">Reply</a></li>
-                                                                        <li role="presentation"><a role="menuitem" href="#"
-                                                                                target="_self"
-                                                                                class="dropdown-item">Edit</a></li>
-                                                                        <li role="presentation"><a role="menuitem" href="#"
-                                                                                target="_self"
-                                                                                class="dropdown-item">Delete</a></li>
-                                                                    </ul>
                                                                 </div>
                                                             </div>
-                                                            <!-- <div class="conversation-name">Doris Brown
-                                                            </div> -->
+                                                            
                                                         </div>
-                                                    </div><!---->
-                                                    <div v-else class="conversation-list message-highlight">
-                                                        <div v-if="toUser.avatar" class="chat-avatar">
-                                                            <img :src="toUser.avatar" alt="">
-                                                        </div>
-                                                        <div v-else class="avatar-xs chat-avatar">
-                                                            <span
-                                                                class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                                                TD</span>
-                                                        </div>
-                                                        <div class="user-chat-content">
-                                                            <div class="ctext-wrap">
-                                                                <div class="ctext-wrap-content">
-                                                                    <div>
-                                                                        <div class="">
-                                                                            <div>
-                                                                                <span target="_blank" class="">
-                                                                                    {{ chat.message }}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <p class="chat-time mb-0 d-flex align-items-center">
-                                                                        <i class="far fa-clock align-middle mr-1"></i>
-                                                                        <span class="align-middle">10:00</span>
-                                                                    </p>
-                                                                </div>
-                                                                <!-- <div class="text-timestamp text-secondary chat-time">
-                                                                    <i class="far fa-clock align-middle mr-1"></i>
-                                                                    <span class="align-middle">10:00</span>
-                                                                </div> -->
-                                                                <div class="dropdown b-dropdown align-self-start btn-group">
-                                                                    <button aria-haspopup="true" aria-expanded="false"
-                                                                        type="button" class="btn dropdown-toggle btn-white">
-                                                                        <i class="fas fa-ellipsis-h"></i>
-                                                                    </button>
-                                                                    <ul role="menu" tabindex="-1" class="dropdown-menu"
-                                                                        aria-labelledby="__BVID__57__BV_toggle_">
-                                                                        <li role="presentation"><a role="menuitem" href="#"
-                                                                                target="_self"
-                                                                                class="dropdown-item">Reply</a></li>
-                                                                        <li role="presentation"><a role="menuitem" href="#"
-                                                                                target="_self"
-                                                                                class="dropdown-item">Edit</a></li>
-                                                                        <li role="presentation"><a role="menuitem" href="#"
-                                                                                target="_self"
-                                                                                class="dropdown-item">Delete</a></li>
-                                                                    </ul>
-                                                                </div>
-                                                            </div>
-                                                            <!-- <div class="conversation-name">Doris Brown
-                                                            </div> -->
-                                                        </div>
-                                                    </div><!---->
-                                                </li>
-                                            </ul>
-                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="simplebar-placeholder" style="width: auto; height: 248px;"></div>
                     </div>
-                    <div class="simplebar-track simplebar-horizontal" style="visibility: hidden;">
-                        <div class="simplebar-scrollbar" style="width: 0px; display: none;"></div>
-                    </div>
-                    <div class="simplebar-track simplebar-vertical" style="visibility: hidden;">
-                        <div class="simplebar-scrollbar" style="height: 0px; display: none;"></div>
-                    </div>
                 </div>
                 <div class="room-footer"><!---->
                     <div class="align-items-center box-footer chat-input-section p-3 p-lg-4 border-top mb-0">
                         <!---->
-                        <textarea @keypress.enter="onSendMessage" v-model="message" placeholder="Type message" rows="1"
-                            class="bg-light border-light rounded" style="min-height: 20px; padding-left: 12px;"></textarea>
+                        <div v-show="fileName" class="file-container bg-light">
+                            <div class="icon-file">
+                                <i class="fa-solid fa-file-arrow-up"></i>
+                            </div>
+                            <div class="file-message">{{ fileName }}</div>
+                            <div class="svg-button icon-remove">
+                                <i @click="onRemoveFile" class="fa-solid fa-x"></i>
+                            </div>
+                        </div>
+                        <textarea @keypress.enter.prevent="onSendMessage" v-model="message" placeholder="Type message"
+                            rows="1" class="bg-light border-light rounded" :class="{ 'disable': fileName }">
+                        </textarea>
                         <div class="icon-textarea"><!---->
                             <div>
                                 <div>
                                     <!-- btn emoji -->
                                     <div class="svg-button">
-                                        <button data-toggle="tooltip" data-placement="top" title=""
-                                            data-original-title="Emoji" param="" class="emoji-btn text-primary">
+                                        <button @click="showIconPicker = !showIconPicker" data-toggle="tooltip"
+                                            data-placement="top" title="" data-original-title="Emoji" param=""
+                                            class="emoji-btn text-primary">
                                             <i class="fa-regular fa-face-smile"></i>
                                         </button>
                                     </div> <!---->
+                                    <EmojiPicker :display-recent="true" :native="true" @select="onSelectEmoji"
+                                        v-show="showIconPicker" />
                                 </div>
                             </div>
                             <!-- btn dinh kem file -->
@@ -226,7 +160,9 @@
                                     <i class="fa-solid fa-paperclip"></i>
                                 </button>
                             </div>
-                            <input type="file" style="display: none;">
+                            <form action="" id="form-file">
+                                <input @change="onFileChange" type="file" name="file" style="display: none;">
+                            </form>
                             <div>
                                 <button @click="onSendMessage" type="button"
                                     class="btn btn-primary font-size-16 btn-lg chat-send">
@@ -241,8 +177,18 @@
     </div>
 </template>
 <script>
+import { get_message, post_message, send_file } from "../../api.js";
+import EmojiPicker from "vue3-emoji-picker";
+import "vue3-emoji-picker/css";
 import { mapActions } from "vuex";
+import Loading from "@/components/Loading.vue";
+import Message from "@/components/Message.vue";
 export default {
+    components: {
+        Loading,
+        EmojiPicker,
+        Message,
+    },
     props: {
         toUser: Object,
         listMessage: Object,
@@ -251,10 +197,15 @@ export default {
         return {
             message: '',
             arr: [],
+            loaded: true,
+            showIconPicker: false,
+            fileName: "",
+            processSendFile: false,
         };
     },
     computed: {
         user() {
+            this.loaded = false;
             this.fetchMessages();
             this.listenEvent();
             return this.toUser;
@@ -267,6 +218,7 @@ export default {
         },
     },
     updated() {
+        console.log('updated');
         this.scrollBottom();
     },
     methods: {
@@ -275,6 +227,7 @@ export default {
             set_messages: "data/set_messages",
             push_message: "data/push_message",
             update_list_message_with_me: "data/update_list_message_with_me",
+            update_message: "data/update_message",
         }),
         onCloseChat() {
             this.$emit('onCloseChat');
@@ -283,7 +236,7 @@ export default {
             const from_user_id = this.$store.state.auth.user.id;
             const to_user_id = this.toUser.id;
             try {
-                const req = await axios.get('/api/fetchMessages', {
+                const req = await axios.get(get_message, {
                     params: {
                         from_user_id: from_user_id,
                         to_user_id: to_user_id,
@@ -291,6 +244,7 @@ export default {
                 });
                 await req.response;
                 this.set_messages(req.data);
+                this.loaded = true;
             }
             catch (error) {
                 if (error.response.status === 401) {
@@ -304,47 +258,126 @@ export default {
             btn.click();
         },
         async onSendMessage() {
+            if (document.querySelector('input[name="file"]').files.length != 0) {
+                this.sendFile();
+            }
+            
+
             this.message = this.message.trim();
-            if (this.message == "") return;
+            const text = this.message;
+            this.message = "";
+
+            if (text == "") return;
             //alert(this.message);
             try {
-                const req = await axios.post('api/sendMessage', {
-                    message: this.message,
+                const req = await axios.post(post_message, {
+                    message: text,
                     to_user_id: this.toUser.id,
                     from_user_id: this.$store.state.auth.user.id,
                     list_message_id: this.listMessage.id,
                 });
                 await req.response;
-                this.listMessage.last_message = this.message;
+                //update list message
+                this.listMessage.last_message = text;
                 this.listMessage.last_user_id_send = this.$store.state.auth.user.id;
                 this.listMessage.updated_at = new Date().toISOString();
                 this.update_list_message_with_me(this.listMessage);
             }
             catch (error) {
                 console.log(error);
-                if (error.response.status === 401) {
-                    this.unAuth();
-                    console.log("Bạn chưa đăng nhập");
+                switch (error.response.status) {
+                    case 401:
+                        this.unAuth();
+                        console.log("Bạn chưa đăng nhập");
+                        break;
+                    case 500:
+                        console.log("Có lỗi xảy ra, vui lòng thử lại sau");
+                        break;
                 }
             }
-            this.message = "";
         },
         listenEvent() {
-             if (this.arr.includes('my-channel-' + this.listMessage.id)) return;
-            const func = this.push_message;
+            if (this.arr.includes('my-channel-' + this.listMessage.id)) return;
+            const self = this;
             Echo.channel('my-channel-' + this.listMessage.id).listen('.send-message', function (data) {
-                //this.push_message(data.message);
                 console.log('push-message');
-                func(data.message);
-                //this.$store.dispatch('data/push_message', data.message);
+                self.push_message(data.message);
+            });
+            //
+            Echo.channel('my-channel-' + this.listMessage.id).listen('.removed-message', function (data) {
+                console.log('removed-message');
+                self.update_message(data.message);
             });
             this.arr.push('my-channel-' + this.listMessage.id);
         },
         scrollBottom() {
-            const last_e = this.$el.querySelectorAll('.list-unstyled');
+            const last_e = document.querySelectorAll('#can-scroll .list-unstyled');
             if (last_e.length > 0) {
                 last_e[last_e.length - 1].scrollIntoView();
             }
+        },
+        hideEmojiPicker(e) {
+            if (e.target.closest('.emoji-btn')) return;
+
+            if (!this.showIconPicker) return;
+
+            if (!e.target.closest('.v3-emoji-picker')) {
+                this.showIconPicker = false;
+            }
+        },
+        onSelectEmoji(emoji) {
+            this.message += emoji.i;
+        },
+        async sendFile() {
+            this.processSendFile = true;
+            const file = document.querySelector('input[name="file"]');
+            if (!file.value) return;
+
+            if (Math.round(file.files[0].size / 1024) > 30000) {
+                alert("File không được lớn hơn 30MB");
+                return;
+            }
+
+            const file_data = file.files[0];
+
+            this.onRemoveFile();
+
+            try {
+                const req = await axios.postForm(send_file, {
+                    to_user_id: this.toUser.id,
+                    from_user_id: this.$store.state.auth.user.id,
+                    list_message_id: this.listMessage.id,
+                    file: file_data,
+                });
+                await req.response;
+            }
+            catch (error) {
+                console.log(error);
+                switch (error.response.status) {
+                    case 401:
+                        this.unAuth();
+                        console.log("Bạn chưa đăng nhập");
+                        break;
+                    case 422:
+                        console.log("Có lỗi xảy ra, vui lòng thử lại sau");
+                        alert(error.response.data.message);
+                        break;
+                    case 500:
+                        console.log("Có lỗi xảy ra, vui lòng thử lại sau");
+                        break;
+                }
+            }
+            this.processSendFile = false;
+        },
+        onFileChange() {
+            const inputFile = document.querySelector('input[name="file"]');
+            console.log(inputFile.value);
+            this.fileName = inputFile.files[0].name;
+        },
+        onRemoveFile() {
+            const inputFile = document.querySelector('input[name="file"]');
+            this.fileName = "";
+            inputFile.value = "";
         }
     },
 };
