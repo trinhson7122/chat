@@ -7,6 +7,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +26,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('user/all', [UserController::class, 'getUserOnline']);
+    Route::controller(UserController::class)->group(function () {
+        Route::get('user/user-online', 'getUserOnline'); 
+        Route::get('user/all', 'fetchUser'); 
+        Route::put('user/{id}', 'update'); 
+     });
     Route::get('auth/logout', [AuthController::class, 'logout']);
 
     Route::controller(ListMessageWithMeController::class)->group(function () {
@@ -36,8 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::controller(MessageController::class)->group(function () {
         Route::get('fetchMessages', 'fetchMessages'); 
         Route::post('sendMessage', 'store'); 
+        Route::post('sendMessageFile', 'storeFile'); 
+        Route::post('removeMessage', 'removeMessage'); 
     });
-    
+});
+
+Route::controller(MessageController::class)->group(function () {
+    Route::get('download/{list_message_id}/{path}', 'downloadFile'); 
 });
 
 Route::prefix('auth')->group(function (){

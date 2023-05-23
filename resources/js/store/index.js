@@ -6,7 +6,7 @@ import createPersistedState  from 'vuex-plugin-persistedstate';
 
 const store = createStore({
     plugins:[
-        //createPersistedState(),
+        createPersistedState(),
     ],
     modules: {
         auth,

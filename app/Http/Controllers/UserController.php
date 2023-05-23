@@ -18,11 +18,23 @@ class UserController extends Controller
         $me = $request->user();
         $now = new Carbon();
         //$now->subMinutes(10);
-        $now->subMinutes(1000);
+        $now->subMinutes(60);
         $users = User::query()->where("last_online_at", '>=', $now->toDateTimeString())
             ->where('id', '<>', $me->id)
             ->limit(20)->get();
 
+        $arrs = [];
+        foreach ($users as $user) {
+            $arrs[] = $user->getUserWithShortName();
+        }
+        return response()->json($arrs);
+    }
+
+    public function fetchUser(Request $request)
+    {
+        $users = User::query()
+            ->orderByDesc('last_online_at')
+            ->get();
         $arrs = [];
         foreach ($users as $user) {
             $arrs[] = $user->getUserWithShortName();
@@ -51,7 +63,17 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email',
+        ]);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        $user->update($validated);
+
+        return response()->json($user->getUserWithShortName());
     }
 
     /**

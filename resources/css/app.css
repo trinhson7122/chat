@@ -3,3 +3,28 @@
     width: 100%;
     object-fit: cover;
 }
+.fw-bold {
+    font-weight: bold;
+    color: black;
+}
+.user-chat .room-footer {
+    position: relative;
+}
+.v3-emoji-picker {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    transform: translateY(-100%);
+}
+
+li {
+    list-style-type: none;
+}
+
+.removed-message {
+    background-color: var(--secondary) !important;
+    color: white !important;
+}
+.disable {
+    display: none;
+}

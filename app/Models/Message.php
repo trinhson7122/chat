@@ -30,4 +30,11 @@ class Message extends Model
     {
         return $this->belongsTo(User::class, 'from_user_id');
     }
+
+    public function toArrWithCreatedAtForHumans()
+    {
+        $arr = $this->toArray();
+        $arr['created_at_for_humans'] = $this->created_at->diffForHumans();
+        return $arr;
+    }
 }

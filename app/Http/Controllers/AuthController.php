@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UpdateUserOnlineEvent;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
@@ -23,6 +24,7 @@ class AuthController extends Controller
         }
 
         $user->setTimeOnline();
+        event(new UpdateUserOnlineEvent($user->getUserWithShortName()));
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

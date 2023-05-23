@@ -10,7 +10,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-    <script src="https://kit.fontawesome.com/fb91352b7c.js" crossorigin="anonymous"></script>
+    <script src="{{ asset('js/icon.js') }}" crossorigin="anonymous"></script>
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
     @vite(['resources/js/app.js'])
 </head>

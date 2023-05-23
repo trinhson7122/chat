@@ -1,5 +1,6 @@
 
 import router from "@/router";
+import data from "./data.js"
 
 export default {
     namespaced: true,
@@ -31,11 +32,14 @@ export default {
             });
         },
         logout({ commit }) {
+            data.state.load_all_data = false;
             console.log("logout");
             window.localStorage.removeItem("VUEX-PERSISTEDSTATE");
             axios.get("/api/auth/logout");
             commit("UNAUTHENTICATED");
             router.push({ name: "login-route" });
+
+            Echo.leaveAllChannels();
         },
         not_auth({commit}) {
             commit("UNAUTHENTICATED");
