@@ -10,7 +10,8 @@
                         <div class="text-center border-bottom p-4">
                             <div class="mb-4 profile-user">
                                 <div class="avatar-lg" v-if="!user.avatar">
-                                    <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{ user.short_name }}</span>
+                                    <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{
+                                        user.short_name }}</span>
                                 </div>
                                 <img v-else :src="user.avatar" alt="" class="rounded-circle avatar-lg img-thumbnail">
                                 <button type="button" class="btn bg-light avatar-xs p-0 rounded-circle profile-photo-edit">
@@ -43,9 +44,12 @@
                                                     </div>
                                                     <div id="accordion-1" class="collapse show" style="">
                                                         <div class="card-body"><!----><!---->
-                                                            <div class="float-right"><button type="button"
-                                                                    class="btn btn-light btn-sm"><i class="fa-solid fa-pen-to-square"></i> Sửa
-                                                                </button></div>
+                                                            <div class="float-right">
+                                                                <button data-toggle="modal" data-target="#edit-profile-modal" type="button"
+                                                                    class="btn btn-light btn-sm">
+                                                                    <i class="fa-solid fa-pen-to-square"></i> Sửa
+                                                                </button>
+                                                            </div>
                                                             <div>
                                                                 <p class="text-muted mb-1"> Họ và tên </p>
                                                                 <h5 class="font-size-14">{{ user.name }}</h5>
@@ -75,23 +79,83 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="edit-profile-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Sửa thông tin cá nhân</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="">Họ và tên</label>
+                                <input type="text" class="form-control" v-model="dataModel.name">
+                            </div>
+                            <div class="form-group">
+                                <label for="">Email</label>
+                                <input type="email" class="form-control" v-model="dataModel.email">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-close-modal btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        <button @click="updateUser" type="button" class="btn btn-primary">Cập nhật</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </DefaultLayout>
 </template>
   
 <script>
 import DefaultLayout from "@/components/layouts/Default.vue";
+import { put_user } from "../../api.js"
+import { mapActions } from "vuex";
 export default {
     components: {
         DefaultLayout,
     },
     data() {
         return {
-            user: null,
+            dataModel: {
+                name: "",
+                email: "",
+            },
         };
     },
     created() {
-        this.user = this.$store.state.auth.user;
-        //console.log(this.$store.state.auth.user);
+        this.dataModel.name = this.user.name;
+        this.dataModel.email = this.user.email;
+    },
+    computed: {
+        user() {
+            return this.$store.state.auth.user;
+        },
+    },
+    methods: {
+        ...mapActions({
+            unAuth: "auth/not_auth",
+        }),
+        async updateUser() {
+            try {
+                const req = await axios.put(put_user + this.user.id, this.dataModel);
+                await req.response;
+                this.$store.state.auth.user = req.data;
+                document.querySelector('#edit-profile-modal .btn-close-modal').click();
+            }
+            catch (error) {
+                if (error.response.status === 401) {
+                    this.unAuth();
+                }
+                console.log(error.response.data);
+            }
+        },
     },
 };
 </script>
