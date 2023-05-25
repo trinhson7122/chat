@@ -13,8 +13,10 @@
                                     <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{
                                         user.short_name }}</span>
                                 </div>
-                                <img v-else :src="user.avatar" alt="" class="img-cover rounded-circle avatar-lg img-thumbnail">
-                                <button @click="onSelectAvatar" type="button" class="btn bg-light avatar-xs p-0 rounded-circle profile-photo-edit">
+                                <img v-else :src="user.avatar" alt=""
+                                    class="img-cover rounded-circle avatar-lg img-thumbnail">
+                                <button @click="onSelectAvatar" type="button"
+                                    class="btn bg-light avatar-xs p-0 rounded-circle profile-photo-edit">
                                     <i class="fa-solid fa-pen"></i>
                                     <input @change="onFileChange" type="file" id="select-avatar" style="display: none">
                                 </button>
@@ -46,7 +48,8 @@
                                                     <div id="accordion-1" class="collapse show" style="">
                                                         <div class="card-body"><!----><!---->
                                                             <div class="float-right">
-                                                                <button data-toggle="modal" data-target="#edit-profile-modal" type="button"
+                                                                <button data-toggle="modal"
+                                                                    data-target="#edit-profile-modal" type="button"
                                                                     class="btn btn-light btn-sm">
                                                                     <i class="fa-solid fa-pen-to-square"></i> Sửa
                                                                 </button>
@@ -76,6 +79,12 @@
                                     style="height: 281px; transform: translate3d(0px, 0px, 0px); display: block;"></div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div v-show="processUpload" class="container">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" :style="`width: ${perCent}%`" :aria-valuenow="perCent"
+                            aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
@@ -128,6 +137,8 @@ export default {
                 name: "",
                 email: "",
             },
+            processUpload: false,
+            perCent: 0.
         };
     },
     created() {
@@ -161,11 +172,24 @@ export default {
             document.querySelector('#select-avatar').click();
         },
         async uploadAvatar() {
+            const file = document.querySelector('#select-avatar');
+            const config = {
+                onUploadProgress: progressEvent => {
+                    this.perCent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    if (this.perCent < 100) {
+                        this.processUpload = true;
+                    }
+                    else {
+                        this.processUpload = false;
+                        this.perCent = 0;
+                    }
+                }
+            }
             try {
                 const req = await axios.postForm(upload_avatar, {
-                    avatar: document.querySelector('#select-avatar').files[0],
+                    avatar: file.files[0],
                     user_id: this.$store.state.auth.user.id,
-                });
+                }, config);
                 await req.response;
                 this.$store.state.auth.user.avatar = req.data.avatar;
             }
