@@ -337,13 +337,21 @@ export default {
             this.processSendFile = false;
         },
         onFileChange() {
+            const max_length = 10;
             const inputFile = document.querySelector('input[name="file"]');
             console.log(inputFile.files[0].type.split('/')[0]);
             if (inputFile.files[0].type.split('/')[0] == 'image') {
                 this.fileName = 'Hình ảnh';
                 return;
             };
-            this.fileName = inputFile.files[0].name;
+            const arr = inputFile.files[0].name.split('.');
+            const extension = arr[arr.length - 1];
+            arr.pop();
+            let file_name = arr.join('.');
+            if (file_name.length > max_length) {
+                file_name = file_name.substring(0, max_length) + '...';
+            }
+            this.fileName = file_name + '.' + extension;
         },
         onRemoveFile() {
             const inputFile = document.querySelector('input[name="file"]');
