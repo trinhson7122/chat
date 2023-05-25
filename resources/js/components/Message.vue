@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <div v-else class="ctext-wrap">
-                        <div class="ctext-wrap-content">
+                        <div class="ctext-wrap-content" :class="{ 'chat-image': chat.is_image }">
                             <div v-if="chat.is_file" class="">
                                 <div class="card p-2 mb-2">
                                     <div class="media align-items-center">
@@ -55,12 +55,24 @@
                                         <div class="ml-4">
                                             <ul class="list-inline mb-0 font-size-20">
                                                 <li class="list-inline-item">
-                                                    <a target="_blank" :href="`api/download/${chat.list_message_id}/${chat.message.split('|')[0]}`" class="text-muted">
+                                                    <a target="_blank"
+                                                        :href="`api/download/${chat.list_message_id}/${chat.message.split('|')[0]}`"
+                                                        class="text-muted">
                                                         <i class="fa-solid fa-download"></i>
                                                     </a>
                                                 </li>
                                             </ul>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else-if="chat.is_image">
+                                <div class="">
+                                    <div>
+                                        <!-- <span target="_blank" class="">
+                                            {{ chat.message }}
+                                        </span> -->
+                                        <img :src="chat.message" alt="" class="img-fluid img-thumbnail">
                                     </div>
                                 </div>
                             </div>
