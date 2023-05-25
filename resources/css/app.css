@@ -28,3 +28,9 @@ li {
 .disable {
     display: none;
 }
+.chat-image {
+    max-width: 500px;
+}
+.chat-conversation .conversation-list .chat-image {
+    padding: 0;
+}
