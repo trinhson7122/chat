@@ -90,7 +90,7 @@ class UserController extends Controller
         $disk = Storage::disk('google');
 
         $validated = $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'avatar' => 'required|image|max:10240',
             'user_id' => 'required|exists:users,id',
         ]);
 

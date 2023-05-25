@@ -82,7 +82,7 @@
                                         <Message v-for="chat in chats" :key="chat.id"
                                             :chat="chat" :toUser="toUser"
                                             :isMe="chat.from_user_id == $store.state.auth.user.id" />
-                                        <WaitSendFileMessage v-if="processSendFile" />
+                                        <WaitSendFileMessage :percent="percentSendFile" v-if="processSendFile" />
                                     </div>
                                 </div>
                             </div>
@@ -169,6 +169,7 @@ export default {
             showIconPicker: false,
             fileName: "",
             processSendFile: false,
+            percentSendFile: 0,
         };
     },
     computed: {
@@ -297,7 +298,7 @@ export default {
             this.message += emoji.i;
         },
         async sendFile() {
-            this.processSendFile = true;
+            //this.processSendFile = true;
             const file = document.querySelector('input[name="file"]');
             if (!file.value) return;
 
@@ -309,13 +310,26 @@ export default {
 
             this.onRemoveFile();
 
+            const config = {
+                onUploadProgress: progressEvent => {
+                    this.percentSendFile = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    if (this.percentSendFile < 100) {
+                        this.processSendFile = true;
+                    }
+                    else {
+                        //this.processSendFile = false;
+                        //this.percentSendFile = 0;
+                    }
+                }
+            }
+
             try {
                 const req = await axios.postForm(send_file, {
                     to_user_id: this.toUser.id,
                     from_user_id: this.$store.state.auth.user.id,
                     list_message_id: this.listMessage.id,
                     file: file_data,
-                });
+                }, config);
                 await req.response;
             }
             catch (error) {

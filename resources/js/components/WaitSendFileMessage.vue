@@ -23,6 +23,10 @@
                                             Đang tải file lên...
                                         </span>
                                     </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" :style="`width: ${percentComputed}%`"
+                                            :aria-valuenow="percentComputed" aria-valuemin="0" aria-valuemax="100">{{ percentComputed }}%</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -33,4 +37,15 @@
         </li>
     </ul>
 </template>
-<script></script>
+<script>
+export default {
+    props: {
+        percent: Number
+    },
+    computed: {
+        percentComputed() {
+            return this.percent;
+        },
+    },
+};
+</script>
