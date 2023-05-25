@@ -92,17 +92,28 @@ class MessageController extends Controller
         $path = $validated['list_message_id'] . '/';
         $file_path = $path . $request->file('file')->getClientOriginalName();
         $result = true;
+        $mimeType = $request->file('file')->getMimeType();
+        $mime = explode('/', $mimeType)[0];
+
         if ($disk->missing($file_path)) {
             $result = $disk->put($file_path, $request->file('file')->getContent());
         }
 
-        $data = Message::create([
+        $arrCreate = [
             'to_user_id' => $validated['to_user_id'],
             'from_user_id' => $validated['from_user_id'],
             'list_message_id' => $validated['list_message_id'],
-            'message' => $request->file('file')->getClientOriginalName() . '|' . formatBytes($request->file('file')->getSize()),
-            'is_file' => 1,
-        ]);
+        ];
+        if ($mime == 'image') {
+            $arrCreate['is_image'] = 1;
+            $arrCreate['message'] = $disk->url($file_path);
+        }
+        else {
+            $arrCreate['is_file'] = 1;
+            $arrCreate['message'] = $request->file('file')->getClientOriginalName() . '|' . formatBytes($request->file('file')->getSize());
+        }
+
+        $data = Message::create($arrCreate);
         if ($result) {
             $list_message = ListMessageWithMe::find($data->list_message_id);
             $list_message->update([
