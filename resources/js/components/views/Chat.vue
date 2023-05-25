@@ -79,44 +79,10 @@
                                 <div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden;">
                                     <div class="simplebar-content" id="can-scroll" style="padding: 24px;">
 
-                                        <Message v-for="chat in chats" :key="chat.id" :chat="chat" :toUser="toUser"
+                                        <Message v-for="chat in chats" :key="chat.id"
+                                            :chat="chat" :toUser="toUser"
                                             :isMe="chat.from_user_id == $store.state.auth.user.id" />
-                                        <ul v-show="processSendFile" class="list-unstyled mb-0" newmessages="sad">
-                                            <li class="right">
-                                                <div class="conversation-list message-highlight align-items-center">
-                                                    <!--  -->
-                                                    <div v-if="$store.state.auth.user.avatar"
-                                                        class="chat-avatar">
-                                                        <img :src="$store.state.auth.user.avatar" alt="" />
-                                                    </div>
-                                                    <div v-else
-                                                        class="avatar-xs chat-avatar">
-                                                        <span
-                                                            class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                                            {{ $store.state.auth.user.short_name }}
-                                                        </span>
-                                                    </div>
-        
-                                                    <div class="user-chat-content">
-
-                                                        <div class="ctext-wrap">
-                                                            <div class="ctext-wrap-content">
-                                                                <div>
-                                                                    <div class="">
-                                                                        <div>
-                                                                            <span target="_blank" class="">
-                                                                                Đang tải file lên...
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
+                                        <WaitSendFileMessage v-if="processSendFile" />
                                     </div>
                                 </div>
                             </div>
@@ -183,11 +149,13 @@ import "vue3-emoji-picker/css";
 import { mapActions } from "vuex";
 import Loading from "@/components/Loading.vue";
 import Message from "@/components/Message.vue";
+import WaitSendFileMessage from "@/components/WaitSendFileMessage.vue";
 export default {
     components: {
         Loading,
         EmojiPicker,
         Message,
+        WaitSendFileMessage,
     },
     props: {
         toUser: Object,
@@ -261,7 +229,7 @@ export default {
             if (document.querySelector('input[name="file"]').files.length != 0) {
                 this.sendFile();
             }
-            
+
 
             this.message = this.message.trim();
             const text = this.message;
@@ -311,7 +279,7 @@ export default {
             this.arr.push('my-channel-' + this.listMessage.id);
         },
         scrollBottom() {
-            const last_e = document.querySelectorAll('#can-scroll .list-unstyled');
+            const last_e = this.$el.querySelectorAll('.list-unstyled');
             if (last_e.length > 0) {
                 last_e[last_e.length - 1].scrollIntoView();
             }
@@ -337,7 +305,6 @@ export default {
                 alert("File không được lớn hơn 30MB");
                 return;
             }
-
             const file_data = file.files[0];
 
             this.onRemoveFile();
@@ -371,7 +338,11 @@ export default {
         },
         onFileChange() {
             const inputFile = document.querySelector('input[name="file"]');
-            console.log(inputFile.value);
+            console.log(inputFile.files[0].type.split('/')[0]);
+            if (inputFile.files[0].type.split('/')[0] == 'image') {
+                this.fileName = 'Hình ảnh';
+                return;
+            };
             this.fileName = inputFile.files[0].name;
         },
         onRemoveFile() {
