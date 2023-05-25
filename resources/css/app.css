@@ -3,6 +3,9 @@
     width: 100%;
     object-fit: cover;
 }
+.avatar-1-1 {
+    aspect-ratio : 1 / 1;
+}
 .fw-bold {
     font-weight: bold;
     color: black;
@@ -33,4 +36,7 @@ li {
 }
 .chat-conversation .conversation-list .chat-image {
     padding: 0;
+}
+.img-cover {
+    object-fit: cover;
 }
