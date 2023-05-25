@@ -16,6 +16,7 @@ const get_message = `${base_url}/fetchMessages`;
 const post_message = `${base_url}/sendMessage`;
 const remove_message = `${base_url}/removeMessage`;
 const send_file = `${base_url}/sendMessageFile`;
+const upload_avatar = `${base_url}/upload_avatar`;
 
 export { 
     login, 
@@ -32,4 +33,5 @@ export {
     fetch_user,
     put_user,
     send_file,
+    upload_avatar,
 };

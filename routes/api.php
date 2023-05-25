@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('user/user-online', 'getUserOnline'); 
         Route::get('user/all', 'fetchUser'); 
         Route::put('user/{id}', 'update'); 
+        Route::post('upload_avatar', 'uploadAvatar'); 
      });
     Route::get('auth/logout', [AuthController::class, 'logout']);
 

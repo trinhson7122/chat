@@ -16,7 +16,7 @@
                     <button data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" type="button"
                         class="btn dropdown-toggle btn-white nav-link justify-content-center align-items-center d-flex"
                         id="dropdown-user-menu1">
-                        <img v-if="user.avatar" :src="user.avatar" alt="" class="profile-user rounded-circle">
+                        <img v-if="user.avatar" :src="user.avatar" alt="" class="img-cover profile-user rounded-circle">
                         <div v-else class="avatar-xs text-center">
                             <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{ user.short_name
                             }}</span>
@@ -37,7 +37,7 @@
                 <div class="dropdown nav-item btn-group dropup profile-user-dropdown btn-group">
                     <button data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" type="button"
                         class="btn dropdown-toggle btn-white" id="dropdown-user-menu">
-                        <img v-if="user.avatar != null" :src="user.avatar" alt="" class="profile-user rounded-circle">
+                        <img v-if="user.avatar != null" :src="user.avatar" alt="" class="img-cover profile-user rounded-circle">
                         <div v-else class="avatar-xs text-center">
                             <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{ user.short_name
                             }}</span>

@@ -4,7 +4,7 @@
             <div class="media align-items-center">
                 <div class="chat-user-img online align-self-center mr-3 online">
                     <div v-if="toUser.avatar">
-                        <img :src="toUser.avatar" alt="" class="rounded-circle avatar-xs">
+                        <img :src="toUser.avatar" alt="" class="avatar-1-1 rounded-circle avatar-xs">
                         <span class="user-status"></span>
                     </div>
                     <div v-else class="avatar-xs">

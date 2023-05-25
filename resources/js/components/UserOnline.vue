@@ -3,7 +3,7 @@
         <div class="item">
             <a href="javascript:void(0);" class="user-status-box">
                 <div v-if="user.avatar" class="avatar-xs mx-auto d-block chat-user-img online">
-                    <img :src="user.avatar" alt="user-img" class="img-fluid rounded-circle">
+                    <img :src="user.avatar" alt="user-img" class="avatar-1-1 img-fit img-fluid rounded-circle">
                     <span class="user-status"></span>
                 </div>
                 <div v-else class="avatar-xs mx-auto chat-user-img online">

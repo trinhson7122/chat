@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 use function PHPSTORM_META\map;
 
@@ -82,5 +83,29 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $disk = Storage::disk('google');
+
+        $validated = $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $content = $request->file('avatar')->getContent();
+        $extension = $request->file('avatar')->getExtension();
+        $filename = "user_" . $validated['user_id'] . '/' . time() . '.' . $extension;
+
+        $disk->put($filename, $content);
+        $user = User::find($validated['user_id']);
+        $user->avatar = $disk->url($filename);
+        $user->save();
+
+        return response()->json([
+            'avatar' => $user->avatar,
+            'message' => 'success',
+        ]);
     }
 }

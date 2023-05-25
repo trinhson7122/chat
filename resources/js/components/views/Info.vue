@@ -13,9 +13,10 @@
                                     <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{
                                         user.short_name }}</span>
                                 </div>
-                                <img v-else :src="user.avatar" alt="" class="rounded-circle avatar-lg img-thumbnail">
-                                <button type="button" class="btn bg-light avatar-xs p-0 rounded-circle profile-photo-edit">
+                                <img v-else :src="user.avatar" alt="" class="img-cover rounded-circle avatar-lg img-thumbnail">
+                                <button @click="onSelectAvatar" type="button" class="btn bg-light avatar-xs p-0 rounded-circle profile-photo-edit">
                                     <i class="fa-solid fa-pen"></i>
+                                    <input @change="onFileChange" type="file" id="select-avatar" style="display: none">
                                 </button>
                             </div><!---->
                             <h5 class="font-size-16 mb-1 text-truncate">{{ user.name }}</h5>
@@ -115,7 +116,7 @@
   
 <script>
 import DefaultLayout from "@/components/layouts/Default.vue";
-import { put_user } from "../../api.js"
+import { put_user, upload_avatar } from "../../api.js"
 import { mapActions } from "vuex";
 export default {
     components: {
@@ -156,6 +157,28 @@ export default {
                 console.log(error.response.data);
             }
         },
+        onSelectAvatar() {
+            document.querySelector('#select-avatar').click();
+        },
+        async uploadAvatar() {
+            try {
+                const req = await axios.postForm(upload_avatar, {
+                    avatar: document.querySelector('#select-avatar').files[0],
+                    user_id: this.$store.state.auth.user.id,
+                });
+                await req.response;
+                this.$store.state.auth.user.avatar = req.data.avatar;
+            }
+            catch (error) {
+                if (error.response.status === 401) {
+                    this.unAuth();
+                }
+                console.log(error.response.data);
+            }
+        },
+        onFileChange() {
+            this.uploadAvatar();
+        }
     },
 };
 </script>
