@@ -198,6 +198,7 @@ export default {
                     this.unAuth();
                 }
                 console.log(error.response.data);
+                alert(error.response.data.message);
             }
         },
         onFileChange() {
