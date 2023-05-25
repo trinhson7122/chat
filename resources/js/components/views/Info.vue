@@ -84,7 +84,7 @@
                 <div v-show="processUpload" class="container">
                     <div class="progress">
                         <div class="progress-bar bg-success" role="progressbar" :style="`width: ${perCent}%`" :aria-valuenow="perCent"
-                            aria-valuemin="0" aria-valuemax="100"></div>
+                            aria-valuemin="0" aria-valuemax="100">{{ perCent }}%</div>
                     </div>
                 </div>
             </div>
