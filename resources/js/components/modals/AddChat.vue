@@ -13,8 +13,8 @@
                 <div class="modal-body">
                     <form>
                         <div class="form-group mb-4">
-                            <label>Name</label>
-                            <input v-model="searchName" type="text" placeholder="Enter name" class="form-control">
+                            <label>Tên người nhận</label>
+                            <input v-model="searchName" type="text" placeholder="Điền tên người nhận" class="form-control">
                         </div>
                     </form>
                     <div>
@@ -44,17 +44,16 @@
     </div>
 </template>
 <script>
-import { fetch_user, store_list_message } from '../../api.js';
+import { store_list_message } from '../../api.js';
 import { mapActions } from 'vuex';
 export default {
     data() {
         return {
-            users: [],
             searchName: "",
         };
     },
-    created() {
-        this.fetchUser();
+    props: {
+        users: Array,
     },
     computed: {
         searchNameComp() {
@@ -73,25 +72,6 @@ export default {
             unAuth: "auth/not_auth",
             update_list_message_with_me: "data/update_list_message_with_me",
         }),
-        async fetchUser() {
-            try {
-                const req = await axios.get(fetch_user);
-                await req.response;
-                this.users = req.data;
-            }
-            catch (error) {
-                console.log(error);
-                switch (error.response.status) {
-                    case 401:
-                        this.unAuth();
-                        console.log("Bạn chưa đăng nhập");
-                        break;
-                    case 500:
-                        console.log("Có lỗi xảy ra, vui lòng thử lại sau");
-                        break;
-                }
-            }
-        },
         async addChat(user) {
             document.querySelector('#add-chat-modal .btn-close-modal').click();
             try {

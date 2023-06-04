@@ -57,6 +57,9 @@ export default {
         else {
             this.toUser = this.user.from_user;
         }
+        if (this.user.to_group_id) {
+            this.toUser = this.user.to_group;
+        }
     },
     methods: {
         setActive() {

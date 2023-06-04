@@ -18,7 +18,7 @@
                                 <button @click="onSelectAvatar" type="button"
                                     class="btn bg-light avatar-xs p-0 rounded-circle profile-photo-edit">
                                     <i class="fa-solid fa-pen"></i>
-                                    <input @change="onFileChange" type="file" id="select-avatar" style="display: none">
+                                    <input @change="onFileChange" accept="image/*" type="file" id="select-avatar" style="display: none">
                                 </button>
                             </div><!---->
                             <h5 class="font-size-16 mb-1 text-truncate">{{ user.name }}</h5>

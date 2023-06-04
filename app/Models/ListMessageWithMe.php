@@ -26,4 +26,9 @@ class ListMessageWithMe extends Model
     {
         return $this->belongsTo(User::class, 'to_user_id');
     }
+
+    public function toGroup()
+    {
+        return $this->belongsTo(GroupMessage::class, 'to_group_id');
+    }
 }

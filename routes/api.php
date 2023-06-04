@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\GroupMessageController;
 use App\Http\Controllers\ListMessageWithMeController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
@@ -44,6 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('sendMessage', 'store'); 
         Route::post('sendMessageFile', 'storeFile'); 
         Route::post('removeMessage', 'removeMessage'); 
+    });
+
+    Route::controller(GroupMessageController::class)->group(function () {
+        Route::post('createGroupMessage', 'store'); 
     });
 });
 

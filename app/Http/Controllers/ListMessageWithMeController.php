@@ -41,7 +41,7 @@ class ListMessageWithMeController extends Controller
         $obj = ListMessageWithMe::query()->where('from_user_id', $me->id)
             ->orWhere('to_user_id', $me->id)
             ->whereNotNull('last_user_id_send')
-            ->with('fromUser', 'toUser')
+            ->with('fromUser', 'toUser', 'toGroup')
             ->orderByDesc('updated_at')
             ->get();
         
@@ -49,7 +49,12 @@ class ListMessageWithMeController extends Controller
         foreach ($obj as $item) {
             $arr = $item->toArray();
             //dd($item->toUser->getUserWithShortName());
-            $arr['to_user'] = $item->toUser->getUserWithShortName();
+            if ($item->toUser) {
+                $arr['to_user'] = $item->toUser->getUserWithShortName();
+            }
+            if ($item->toGroup) {
+                $arr['to_group'] = $item->toGroup->getGroupWithShortName();
+            }
             $arr['from_user'] = $item->fromUser->getUserWithShortName();
             $arrObj[] = $arr;
         }

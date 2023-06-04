@@ -12,12 +12,19 @@
                         {{ $store.state.auth.user.short_name }}
                     </span>
                 </div>
-                <div v-else-if="toUser.avatar && chat.from_user_id != $store.state.auth.user.id" class="chat-avatar">
+                <div v-else-if="!chat.is_group && toUser.avatar && chat.from_user_id != $store.state.auth.user.id" class="chat-avatar">
                     <img :src="toUser.avatar" alt="" />
                 </div>
-                <div v-else-if="chat.from_user_id != $store.state.auth.user.id" class="avatar-xs chat-avatar">
+                <div v-else-if="!chat.is_group && chat.from_user_id != $store.state.auth.user.id" class="avatar-xs chat-avatar">
                     <span class="avatar-title rounded-circle bg-soft-primary text-primary">
                         {{ toUser.short_name }}</span>
+                </div>
+                <div v-else-if="chat.is_group && chat.from_user.avatar && chat.from_user_id != $store.state.auth.user.id" class="chat-avatar">
+                    <img :src="chat.from_user.avatar" alt="" />
+                </div>
+                <div v-else-if="chat.is_group && chat.from_user_id != $store.state.auth.user.id" class="avatar-xs chat-avatar">
+                    <span class="avatar-title rounded-circle bg-soft-primary text-primary">
+                        {{ chat.from_user.short_name }}</span>
                 </div>
                 <div class="user-chat-content">
                     <div v-if="chat.is_removed" class="ctext-wrap">
@@ -97,6 +104,7 @@
                             </ul>
                         </div>
                     </div>
+                    <div v-if="!isMe && chat.is_group" class="conversation-name">{{ chat.from_user.name }}</div>
                     <div v-show="!chat.is_removed" class="conversation-name text-secondary">
                         <i class="far fa-clock align-middle mr-1"></i>
                         {{ chat.created_at_for_humans }}
@@ -115,6 +123,7 @@ export default {
         toUser: Object,
         isMe: Boolean,
         processSendFile: Boolean,
+        fromUser: Object,
     },
     methods: {
         ...mapActions({

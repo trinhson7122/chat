@@ -44,24 +44,16 @@
                                 <li class="list-inline-item">
                                     <div class="dropdown b-dropdown btn-group">
                                         <button aria-haspopup="true" aria-expanded="false" type="button"
-                                            class="btn dropdown-toggle btn-white nav-btn">
+                                            class="btn dropdown-toggle btn-white nav-btn" data-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <ul role="menu" tabindex="-1" class="dropdown-menu dropdown-menu-right"
-                                            aria-labelledby="__BVID__45__BV_toggle_">
-                                            <li role="presentation" class="d-block d-lg-none user-profile-show"><a
-                                                    role="menuitem" href="javascript:void(0);" target="_self"
-                                                    class="dropdown-item"> View
-                                                    profile <i class="ri-user-2-line float-right text-muted"></i></a></li>
-                                            <li role="presentation"><a role="menuitem" href="javascript:void(0);"
-                                                    target="_self" class="dropdown-item"> Archive
-                                                    <i class="ri-archive-line float-right text-muted"></i></a></li>
-                                            <li role="presentation"><a role="menuitem" href="javascript:void(0);"
-                                                    target="_self" class="dropdown-item"> Muted
-                                                    <i class="ri-volume-mute-line float-right text-muted"></i></a></li>
-                                            <li role="presentation"><a role="menuitem" href="javascript:void(0);"
-                                                    target="_self" class="dropdown-item"> Delete
-                                                    <i class="ri-delete-bin-line float-right text-muted"></i></a></li>
+                                        <ul role="menu" tabindex="-1" class="dropdown-menu dropdown-menu-right">
+                                            <li role="presentation" class="d-block user-profile-show">
+                                                <a @click="showProfile = !showProfile" role="menuitem"
+                                                    href="javascript:void(0);" class="dropdown-item">
+                                                    Xem thông tin
+                                                </a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </li>
@@ -79,8 +71,7 @@
                                 <div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden;">
                                     <div class="simplebar-content" id="can-scroll" style="padding: 24px;">
 
-                                        <Message v-for="chat in chats" :key="chat.id"
-                                            :chat="chat" :toUser="toUser"
+                                        <Message v-for="chat in chats" :key="chat.id" :chat="chat" :toUser="toUser"
                                             :isMe="chat.from_user_id == $store.state.auth.user.id" />
                                         <WaitSendFileMessage :percent="percentSendFile" v-if="processSendFile" />
                                     </div>
@@ -127,7 +118,7 @@
                                 </button>
                             </div>
                             <form action="" id="form-file">
-                                <input @change="onFileChange" type="file" name="file" style="display: none;">
+                                <input @change="onFileChange" type="file" id="message-file" name="file" style="display: none;">
                             </form>
                             <div>
                                 <button @click="onSendMessage" type="button"
@@ -136,6 +127,158 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div v-show="showProfile" id="profile-show show" class="user-profile-sidebar" style="display: block;">
+                <div class="px-3 px-lg-4 pt-3 pt-lg-4">
+                    <div class="user-chat-nav text-right">
+                        <button @click="showProfile = false" type="button" id="user-profile-hide" class="btn nav-btn"><i
+                                class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center p-4 border-bottom">
+                    <div class="mb-4 profile-user">
+                        <div class="avatar-lg" v-if="!toUser.avatar">
+                            <span class="avatar-title rounded-circle bg-soft-primary text-primary">{{ toUser.short_name
+                            }}</span>
+                        </div>
+                        <img v-else :src="toUser.avatar" alt="" class="img-cover rounded-circle avatar-lg img-thumbnail">
+                    </div>
+                    <h5 class="font-size-16 mb-1 text-truncate"> {{ toUser.name }} </h5>
+                </div>
+                <div data-simplebar="init" class="p-4 user-profile-desc">
+                    <div class="simplebar-wrapper">
+                        <div class="simplebar-height-auto-observer-wrapper">
+                            <div class="simplebar-height-auto-observer"></div>
+                        </div>
+                        <div class="simplebar-mask">
+                            <div class="simplebar-offset">
+                                <div class="simplebar-content-wrapper">
+                                    <div class="simplebar-content" style="padding: 24px;">
+                                        <div id="profile-user-accordion" class="custom-accordion">
+                                            <div class="card border custom-accordion"><!----><!---->
+                                                <div class="card-header">
+                                                    <a href="javascript: void(0);" class="not-collapsed"
+                                                        aria-expanded="true" aria-controls="profileaccordion-1">
+                                                        <h5 class="font-size-14 m-0 align-items-center">
+                                                            <i
+                                                                class="fa-solid fa-circle-info mr-2 align-middle d-inline-block"></i>
+                                                            Thông tin
+                                                            <i
+                                                                class="fa-solid fa-angle-right float-right accor-plus-icon"></i>
+                                                        </h5>
+                                                    </a>
+                                                </div>
+                                                <div id="profileaccordion-1" class="collapse show">
+                                                    <div class="card-body"><!----><!---->
+                                                        <div>
+                                                            <p class="text-muted mb-1"> Tên </p>
+                                                            <h5 class="font-size-14"> {{ toUser.name }} </h5>
+                                                        </div>
+                                                        <div class="mt-4">
+                                                            <p class="text-muted mb-1"> Email </p>
+                                                            <h5 class="font-size-14"> {{ toUser.email }} </h5>
+                                                        </div>
+                                                    </div>
+                                                </div><!----><!---->
+                                            </div>
+                                            <div class="card border custom-accordion"><!----><!---->
+                                                <div class="card-header"><a href="javascript: void(0);" class="collapsed"
+                                                        aria-expanded="false" data-toggle="collapse"
+                                                        data-target="#profileaccordion-2"
+                                                        aria-controls="profileaccordion-2">
+                                                        <h5 class="font-size-14 m-0">
+                                                            <i
+                                                                class="fa-solid fa-paperclip mr-2 align-middle d-inline-block"></i>
+                                                            <i
+                                                                class="ri-attachment-line mr-2 align-middle d-inline-block"></i>
+                                                            File đính kèm
+                                                            <i
+                                                                class="fa-solid fa-angle-right float-right accor-plus-icon"></i>
+                                                        </h5>
+                                                    </a></div>
+                                                <div id="profileaccordion-2" class="collapse">
+                                                    <div class="card-body"><!----><!---->
+                                                        <div class="card p-2 border mb-2" v-for="chat_file in chat_files"
+                                                            :key="chat_file.id">
+                                                            <div class="media align-items-center">
+                                                                <div class="avatar-sm mr-3">
+                                                                    <div
+                                                                        class="avatar-title bg-soft-primary text-primary rounded font-size-20">
+                                                                        <i class="fa-solid fa-file"></i>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="media-body">
+                                                                    <div class="text-left">
+                                                                        <h5 class="font-size-14 mb-1">
+                                                                            {{ chat_file.message.split('|')[0] }}
+                                                                        </h5>
+                                                                        <p class="text-muted font-size-13 mb-0">
+                                                                            {{ chat_file.message.split('|')[1] }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ml-4">
+                                                                    <ul class="list-inline mb-0 font-size-18">
+                                                                        <li class="list-inline-item">
+                                                                            <a target="_blank"
+                                                                                :href="`api/download/${chat_file.list_message_id}/${chat_file.message.split('|')[0]}`"
+                                                                                class="text-muted px-1">
+                                                                                <i class="fa-solid fa-download"></i>
+                                                                            </a>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div><!----><!---->
+                                            </div>
+                                            <div class="card border custom-accordion"><!----><!---->
+                                                <div class="card-header"><a href="javascript: void(0);" class="collapsed"
+                                                        data-toggle="collapse" data-target="#profileaccordion-3"
+                                                        aria-expanded="false" aria-controls="profileaccordion-3">
+                                                        <h5 class="font-size-14 m-0">
+                                                            <i
+                                                                class="fa-solid fa-paperclip mr-2 align-middle d-inline-block"></i>
+                                                            <i
+                                                                class="ri-attachment-line mr-2 align-middle d-inline-block"></i>
+                                                            Hình ảnh
+                                                            <i
+                                                                class="fa-solid fa-angle-right float-right accor-plus-icon"></i>
+                                                        </h5>
+                                                    </a></div>
+                                                <div id="profileaccordion-3" class="collapse">
+                                                    <div class="card-body"><!----><!---->
+                                                        <div class="card p-2 border mb-2" v-for="chat_image in chat_images"
+                                                            :key="chat_image.id">
+                                                            <div class="media align-items-center">
+                                                                <div class="media-body">
+                                                                    <div class="text-left">
+                                                                        <img :src="chat_image.message" alt=""
+                                                                            class="img-fluid">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div><!----><!---->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="simplebar-placeholder" style="width: auto; height: 562px;"></div>
+                    </div>
+                    <div class="simplebar-track simplebar-horizontal" style="visibility: hidden;">
+                        <div class="simplebar-scrollbar" style="width: 0px; display: none;"></div>
+                    </div>
+                    <div class="simplebar-track simplebar-vertical" style="visibility: visible;">
+                        <div class="simplebar-scrollbar"
+                            style="height: 209px; display: block; transform: translate3d(0px, 0px, 0px);"></div>
                     </div>
                 </div>
             </div>
@@ -167,6 +310,7 @@ export default {
             arr: [],
             loaded: true,
             showIconPicker: false,
+            showProfile: false,
             fileName: "",
             processSendFile: false,
             percentSendFile: 0,
@@ -185,6 +329,20 @@ export default {
         chats() {
             return this.$store.state.data.messages;
         },
+        chat_files() {
+            return this.$store.state.data.messages.filter((item) => {
+                return item.is_file;
+            }).sort((a, b) => {
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+        },
+        chat_images() {
+            return this.$store.state.data.messages.filter((item) => {
+                return item.is_image;
+            }).sort((a, b) => {
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+        },
     },
     updated() {
         console.log('updated');
@@ -202,14 +360,18 @@ export default {
             this.$emit('onCloseChat');
         },
         async fetchMessages() {
-            const from_user_id = this.$store.state.auth.user.id;
-            const to_user_id = this.toUser.id;
+            const param = {
+                from_user_id: this.$store.state.auth.user.id,
+            };
+            if (this.listMessage.to_user_id) {
+                param.to_user_id = this.toUser.id;
+            }
+            else {
+                param.to_group_id = this.toUser.id;
+            }
             try {
                 const req = await axios.get(get_message, {
-                    params: {
-                        from_user_id: from_user_id,
-                        to_user_id: to_user_id,
-                    },
+                    params: param,
                 });
                 await req.response;
                 this.set_messages(req.data);
@@ -223,7 +385,7 @@ export default {
             }
         },
         openFile() {
-            const btn = document.querySelector('input[type="file"]');
+            const btn = document.querySelector('input#message-file');
             btn.click();
         },
         async onSendMessage() {
@@ -231,20 +393,27 @@ export default {
                 this.sendFile();
             }
 
-
             this.message = this.message.trim();
             const text = this.message;
             this.message = "";
 
             if (text == "") return;
             //alert(this.message);
+
+            const form_data = {
+                message: text,
+                from_user_id: this.$store.state.auth.user.id,
+                list_message_id: this.listMessage.id,
+            };
+            if (this.listMessage.to_user_id) {
+                form_data.to_user_id = this.toUser.id;
+            }
+            else {
+                form_data.to_group_id = this.toUser.id;
+            }
+
             try {
-                const req = await axios.post(post_message, {
-                    message: text,
-                    to_user_id: this.toUser.id,
-                    from_user_id: this.$store.state.auth.user.id,
-                    list_message_id: this.listMessage.id,
-                });
+                const req = await axios.post(post_message, form_data);
                 await req.response;
                 //update list message
                 this.listMessage.last_message = text;

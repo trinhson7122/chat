@@ -18,18 +18,29 @@ class MessageController extends Controller
     {
         $validated = $request->validate([
             'from_user_id' => 'required|exists:users,id',
-            'to_user_id' => 'required|exists:users,id',
+            'to_user_id' => 'nullable|exists:users,id',
+            'to_group_id' => 'nullable|exists:group_messages,id',
         ]);
 
-        $data = Message::query()->where('from_user_id', $validated['from_user_id'])
-            ->where('to_user_id', $validated['to_user_id'])
-            ->orWhere('from_user_id', $validated['to_user_id'])
-            ->where('to_user_id', $validated['from_user_id'])
-            ->get();
+        $data = null;
+        if ($request->has('to_user_id')) {
+            $data = Message::query()->where('from_user_id', $validated['from_user_id'])
+                ->where('to_user_id', $validated['to_user_id'])
+                ->orWhere('from_user_id', $validated['to_user_id'])
+                ->where('to_user_id', $validated['from_user_id'])
+                ->with('fromUser')
+                ->get();
+        } else {
+            $data = Message::query()
+                ->where('to_group_id', $validated['to_group_id'])
+                ->with('fromUser')
+                ->get();
+        }
 
         $arrData = [];
         foreach ($data as $item) {
             $arr = $item->toArrWithCreatedAtForHumans();
+            $arr['from_user'] = $item->fromUser->getUserWithShortName();
             $arrData[] = $arr;
         }
         return response()->json($arrData);
@@ -39,24 +50,60 @@ class MessageController extends Controller
     {
         $validated = $request->validate([
             'from_user_id' => 'required|exists:users,id',
-            'to_user_id' => 'required|exists:users,id',
+            'to_user_id' => 'nullable|exists:users,id',
+            'to_group_id' => 'nullable|exists:group_messages,id',
             'list_message_id' => 'required|exists:list_message_with_mes,id',
             'message' => 'required',
         ]);
 
+        if ($request->has('to_group_id')) {
+            $validated['is_group'] = 1;
+        }
         $data = Message::create($validated);
+        //$data = Message::query()->find($data->id)->with('fromUser')->first();
+        $obj = null;
+        $arr = [];
 
-        $obj = ListMessageWithMe::query()->with('fromUser', 'toUser')->find($validated['list_message_id']);
-        $obj->update([
-            'last_message' => $validated['message'],
-            'last_user_id_send' => $validated['from_user_id'],
-        ]);
-        $arr = $obj->toArray();
-        $arr['to_user'] = $obj->toUser->getUserWithShortName();
-        $arr['from_user'] = $obj->fromUser->getUserWithShortName();
+        if ($request->has('to_user_id')) {
+            $obj = ListMessageWithMe::query()->with('fromUser', 'toUser')->find($validated['list_message_id']);
+            $obj->update([
+                'last_message' => $validated['message'],
+                'last_user_id_send' => $validated['from_user_id'],
+            ]);
+            $arr = $obj->toArray();
+            $arr['to_user'] = $obj->toUser->getUserWithShortName();
+            $arr['from_user'] = $obj->fromUser->getUserWithShortName();
+
+            event(new SendMessageEvent($data->toArrWithCreatedAtForHumans(), $obj->id));
+            event(new UpdateListMessageEvent($arr, $data->to_user_id));
+        } else {
+            $list = ListMessageWithMe::query()
+                ->where('to_group_id', $validated['to_group_id'])
+                ->with('fromUser', 'toGroup')
+                ->get();
+            //$obj = ListMessageWithMe::query()->with('fromUser', 'toGroup')->find($validated['list_message_id']);
+
+            foreach ($list as $obj) {
+                $obj->update([
+                    'last_message' => $validated['message'],
+                    'last_user_id_send' => $validated['from_user_id'],
+                ]);
+                $arr = $obj->toArray();
+                $arr['to_group'] = $obj->toGroup->getGroupWithShortName();
+                $arr['from_user'] = $obj->fromUser->getUserWithShortName();
+
+                $temp = $data->toArrWithCreatedAtForHumans();
+                $temp['from_user'] = $data->fromUser->getUserWithShortName();
+
+                event(new SendMessageEvent($temp, $obj->id));
+                event(new UpdateListMessageEvent($arr, $obj->from_user_id));
+            }
+        }
+
+
         $this->setUserOnline($request->user());
-        event(new SendMessageEvent($data->toArrWithCreatedAtForHumans(), $obj->id));
-        event(new UpdateListMessageEvent($arr, $data->to_user_id));
+        //event(new SendMessageEvent($data->toArrWithCreatedAtForHumans(), $obj->id));
+        //event(new UpdateListMessageEvent($arr, $data->to_user_id));
         return response()->json([
             'message' => $data,
             'list_message' => $arr,
@@ -72,6 +119,29 @@ class MessageController extends Controller
         $obj = Message::find($validated['message_id']);
         $obj->is_removed = 1;
         $obj->save();
+
+        // if ($obj->is_group) {
+        //     $lwms = ListMessageWithMe::query()
+        //         ->where('to_group_id', $obj->to_group_id)
+        //         ->with('fromUser', 'toGroup')
+        //         ->get();
+
+        //     foreach ($lwms as $item) {
+        //         $item->update([
+        //            'last_user_id_send' => $request->user()->id,
+        //            'last_message' => 'Thu hồi một tin nhắn'
+        //         ]);
+        //         $arr = $item->toArray();
+        //         $arr['to_group'] = $item->toGroup->getGroupWithShortName();
+        //         $arr['from_user'] = $item->fromUser->getUserWithShortName();
+
+        //         event(new UpdateListMessageEvent($arr, $item->from_user_id));
+        //         event(new RemoveMessageEvent($obj->toArrWithCreatedAtForHumans(), $item->id));
+        //     }
+        // }
+        // else {
+        //     event(new RemoveMessageEvent($obj->toArrWithCreatedAtForHumans(), $obj->list_message_id));
+        // }
 
         event(new RemoveMessageEvent($obj->toArrWithCreatedAtForHumans(), $obj->list_message_id));
         return response()->json([
@@ -107,8 +177,7 @@ class MessageController extends Controller
         if ($mime == 'image') {
             $arrCreate['is_image'] = 1;
             $arrCreate['message'] = $disk->url($file_path);
-        }
-        else {
+        } else {
             $arrCreate['is_file'] = 1;
             $arrCreate['message'] = $request->file('file')->getClientOriginalName() . '|' . formatBytes($request->file('file')->getSize());
         }
@@ -138,7 +207,11 @@ class MessageController extends Controller
         if ($disk->missing("$list_message_id/$path")) {
             return response()->json('File không tồn tại', 404);
         }
-        return $disk->download("$list_message_id/$path");
+        $headers = [
+            'Content-Length: ' . $disk->size("$list_message_id/$path"),
+        ];
+        return $disk->download("$list_message_id/$path", $path, $headers);
+        //return response()->download("$list_message_id/$path", $path, $headers);
     }
 
     public function setUserOnline($user)

@@ -22,9 +22,9 @@
                                         data-toggle="modal" data-target="#add-chat-modal">
                                         <i class="fa-solid fa-user-plus"></i>
                                     </button>
-                                    <button title="Tạo đoạn chat cá nhân" type="button"
+                                    <button title="Tạo đoạn chat nhóm" type="button"
                                         class="btn text-decoration-none text-muted font-size-18 py-0 btn-link"
-                                        data-bs-toggle="modal" data-bs-target="#add-chat-modal1">
+                                        data-toggle="modal" data-target="#add-group-chat-modal">
                                         <i class="fa-solid fa-users"></i>
                                     </button>
                                 </div>
@@ -75,19 +75,21 @@
                 </div>
             </div>
         </div>
-        <AddChatModal />
+        <AddChatModal :users="allUserComp" />
+        <AddGroupChatModal :users="allUserComp" />
     </DefaultLayout>
     <ChatVue @onCloseChat="showChat = false" :listMessage="listMessage" :toUser="toUser"
         :class="{ 'user-chat-show': showChat }" />
 </template>
 <script>
-import { get_list_message_with_me, get_user_online } from "../../api.js";
+import { get_list_message_with_me, get_user_online, fetch_user } from "../../api.js";
 import { mapActions } from "vuex";
 import UserOnline from "@/components/UserOnline.vue";
 import Loading from "@/components/Loading.vue";
 import SelectChat from "@/components/SelectChat.vue";
 import DefaultLayout from "@/components/layouts/Default.vue";
 import AddChatModal from "@/components/modals/AddChat.vue";
+import AddGroupChatModal from "@/components/modals/AddGroupChat.vue";
 import ChatVue from "@/components/views/Chat.vue";
 import 'vue3-carousel/dist/carousel.css';
 import { Carousel, Slide } from 'vue3-carousel';
@@ -101,6 +103,7 @@ export default {
         Carousel,
         Slide,
         Loading,
+        AddGroupChatModal,
     },
     data() {
         return {
@@ -108,6 +111,8 @@ export default {
             loading: false,
             showChat: false,
             searchName: "",
+            allUser: [],
+            fromUser: null,
         };
     },
     created() {
@@ -120,6 +125,7 @@ export default {
             this.listMessage = this.listMessageWithMe[0];
         }
         this.listenEvent();
+        this.fetchUser();
     },
     computed: {
         load() {
@@ -135,9 +141,17 @@ export default {
             if (this.searchName != "") {
 
                 data = data.filter((item) => {
-                    if (item.to_user.name.toLowerCase().includes(this.searchName.toLowerCase())) {
-                        return 1;
+                    if (item.to_user_id) {
+                        if (item.to_user.name.toLowerCase().includes(this.searchName.toLowerCase())) {
+                            return 1;
+                        }
                     }
+                    if (item.to_group_id) {
+                        if (item.to_group.name.toLowerCase().includes(this.searchName.toLowerCase())) {
+                            return 1;
+                        }
+                    }
+
                     if (item.from_user.name.toLowerCase().includes(this.searchName.toLowerCase())) {
                         return 1;
                     }
@@ -153,6 +167,9 @@ export default {
         },
         toUser() {
             if (!this.listMessage) return null;
+            if (this.listMessage.to_group) {
+                return this.listMessage.to_group;
+            }
             if (this.listMessage.from_user_id == this.$store.state.auth.user.id) {
                 return this.listMessage.to_user;
             }
@@ -161,9 +178,12 @@ export default {
             }
         },
         searchNameComp() {
-            this.listMessageWithMe();
+            //this.listMessageWithMe();
             return this.searchName;
-        }
+        },
+        allUserComp() {
+            return this.allUser;
+        },
     },
     methods: {
         ...mapActions({
@@ -226,6 +246,25 @@ export default {
                 //this.push_message(data.message);
                 func1(data.list_message);
             });
+        },
+        async fetchUser() {
+            try {
+                const req = await axios.get(fetch_user);
+                await req.response;
+                this.allUser = req.data;
+            }
+            catch (error) {
+                console.log(error);
+                switch (error.response.status) {
+                    case 401:
+                        this.unAuth();
+                        console.log("Bạn chưa đăng nhập");
+                        break;
+                    case 500:
+                        console.log("Có lỗi xảy ra, vui lòng thử lại sau");
+                        break;
+                }
+            }
         },
     },
 };
